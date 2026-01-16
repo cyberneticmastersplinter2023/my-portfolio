@@ -1,13 +1,24 @@
 import { createClient } from '@supabase/supabase-js'
 import Link from 'next/link';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+// 1. Get the keys from the environment
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+// 2. ONLY create the client if the keys actually exist.
+const supabase = (supabaseUrl && supabaseAnonKey) 
+  ? createClient(supabaseUrl, supabaseAnonKey) 
+  : null;
 
 export default async function Home() {
-  const { data: projects } = await supabase.from('projects').select('*')
+  // 3. Create an empty list as a backup
+  let projects: any[] = [];
+  
+  // 4. Only try to fetch if supabase successfully initialized
+  if (supabase) {
+    const { data } = await supabase.from('projects').select('*');
+    if (data) projects = data;
+  }
 
   return (
     <div className="bg-gray-950 min-h-screen font-sans">
